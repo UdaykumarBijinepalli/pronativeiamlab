@@ -1,0 +1,39 @@
+﻿name: Entra ID & M365 Identity Lifecycle Sync
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'roster/**'
+      - 'scripts/**'
+      - '.github/workflows/identity-lifecycle.yml'
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  sync-identities:
+    name: Reconcile Roster with Entra ID & Azure RBAC
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Passwordless Azure & Entra Login (OIDC)
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Execute Identity Lifecycle Reconciliation
+        shell: pwsh
+        run: ./scripts/Sync-CohortIdentities.ps1
+
+      - name: Upload Compliance Audit Trail Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: identity-compliance-audit-report
+          path: audit/identity-sync-report.json
