@@ -47,7 +47,7 @@ foreach ($Row in $Roster) {
 
   if ($Row.Status -eq 'Active') {
     # 1. Sync Entra Directory Attributes (Department & JobTitle)
-    $PatchBody = @{ department = $Row.Department; jobTitle = $Row.JobTitle } | ConvertTo-Json
+    $PatchBody = @{ department = $Row.Department; jobTitle = $Row.JobTitle; usageLocation = 'IN' } | ConvertTo-Json
     Invoke-RestMethod -Method Patch -Uri ('https://graph.microsoft.com/v1.0/users/{0}' -f $User.id) -Headers $Headers -Body $PatchBody | Out-Null
 
     # 2. Add to Cohort Security Group (idempotent)
